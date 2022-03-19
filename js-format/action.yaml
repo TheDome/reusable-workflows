@@ -1,0 +1,75 @@
+name: JS Formatting
+
+author: Dominic Heun
+description: |
+  Checks the JS formatting of the repo
+
+inputs:
+  repo-default-branch:
+    default: ${{ github.event.repository.default_branch }}
+    description: The name of the develop branch
+    required: false
+  disable-eslint:
+    default: "false"
+    description: Disable eslint
+    required: false
+  disable-prettier:
+    default: "false"
+    description: Disable prettier
+    required: false
+  github-token:
+    required: true
+    description: The GitHub token to use for authentication
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout Reusable repo
+      uses: actions/checkout@v2
+      with:
+        repository: thedome/reusable-actions
+        path: .github/actions/thedome/reusable-actions
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        token: ${{ inputs.github-token }}
+
+    - name: eslint
+      shell: bash
+      if: inputs.disable-eslint != "true"
+      run: |
+        npx eslint --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore --color src
+        npx eslint --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore  --output-file eslint_report.json --format json src
+
+    - name: Have files changed?
+      id: check_files_changed
+      if: inputs.disable-eslint != "true"
+      uses: actions/github-script@v6
+      with:
+        script: |
+          if ( !context.issue || !context.issue.number ){
+            console.log("Push event supressed");
+            return 'true';
+          }
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number
+          });
+
+          const files = pr.data.changed_files;
+          if (files.length > 0) {
+            return 'true';
+          }
+          return 'false';
+    - name: Annotate Code Linting Results
+      if: inputs.disable-eslint != 'true' && github.event_name == 'pull_request' && steps.check_files_changed.result == 'true'
+      uses: ataylorme/eslint-annotate-action@1.2.0
+      with:
+        repo-token: "${{ inputs.github-token }}"
+        report-json: "eslint_report.json"
+    - name: Prettier
+      if: inputs.disable-prettier != 'true'
+      run: |
+        npx prettier --check .
+      shell: bash

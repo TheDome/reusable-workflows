@@ -1,0 +1,39 @@
+name: Megalint
+
+author: Dominic Heun
+description: |
+  Runs a mega linter for the repo
+
+inputs:
+  repo-default-branch:
+    default: ${{ github.event.repository.default_branch }}
+    description: The name of the develop branch
+    required: false
+  github-token:
+    required: true
+    description: The GitHub token to use for authentication
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        token: ${{ inputs.github-token }}
+        fetch-depth: 0
+
+    - name: MegaLinter
+      id: ml
+      uses: megalinter/megalinter@v5
+      env:
+        VALIDATE_ALL_CODEBASE: ${{ github.event_name == 'push' && github.ref == '${{ inputs.repo-default-branch }}' }} # Validates all source when push on main, else just the git diff with main. Override with true if you always want to lint all sources
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+
+    - name: Archive production artifacts
+      if: ${{ success() }} || ${{ failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: MegaLinter reports
+        path: |
+          report
+          mega-linter.log
