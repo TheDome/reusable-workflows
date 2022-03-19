@@ -32,7 +32,7 @@ jobs:
         with:
           repository: thedome/reusable-actions
           path: .github/actions/thedome/reusable-actions
-      - uses: .github/actions/thedome/reusable-actions/create-release-pr
+      - uses: thedome/reusable-actions/create-release-pr@main
         with:
           production-branch: ${{ inputs.production-branch }}
           develop-branch: ${{ inputs.develop-branch }}
