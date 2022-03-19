@@ -1,0 +1,32 @@
+name: CI-Lint
+
+author: Dominic Heun
+description: |
+  Runs a ci linter on your repo
+
+inputs:
+  github-token:
+    required: true
+    description: The GitHub token to use for authentication
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        token: ${{ inputs.github-token }}
+        fetch-depth: 0
+
+    - name: Download actionlint
+      id: get_actionlint
+      run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+      shell: bash
+
+    - name: actionlint version
+      run: ${{ steps.get_actionlint.outputs.executable }} -version
+      shell: bash
+
+    - name: Check workflow files
+      run: ${{ steps.get_actionlint.outputs.executable }} -color -verbose
+      shell: bash

@@ -1,0 +1,56 @@
+name: Check code
+on:
+  workflow_call:
+    inputs:
+      repo-default-branch:
+        default: ${{ github.event.repository.default_branch }}
+        description: The name of the develop branch
+        required: false
+        type: string
+    secrets:
+      github-token:
+        required: true
+        description: The GitHub token to use for authentication
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      is-js-project: ${{ steps.determine_if_javascript_project.outputs.is_javascript_project }}
+    steps:
+      - name: determine if this is a javascript project
+        shell: bash
+        id: determine_if_javascript_project
+        run: |
+          if [ -f package.json ]; then
+            echo "::set-output name=is_javascript_project::true"
+          else
+            echo "::set-output name=is_javascript_project::false"
+          fi
+    
+  check-code:
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: needs.prepare.outputs.is_js_project == 'true'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: thedome/reusable-workflows
+          path: .github/actions/thedome/reusable-workflows
+      - uses: ./.github/actions/thedome/reusable-workflows/check-code-formatting
+        with:
+          repo-default-branch: ${{ inputs.repo-default-branch }}
+          github-token: ${{ secrets.github-token }}
+  ci-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: thedome/reusable-workflows
+          path: .github/actions/thedome/reusable-workflows
+      - uses: ./.github/actions/thedome/reusable-workflows/ci-lint
+        with:
+          github-token: ${{ secrets.github-token }}

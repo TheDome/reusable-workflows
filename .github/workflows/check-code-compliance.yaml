@@ -1,0 +1,16 @@
+name: Check code
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  own-lint:
+    uses: ./.github/workflows/check-code-structure.yaml
+    with:
+      repo-default-branch: ${{ github.event.repository.default_branch }}
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
