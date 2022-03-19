@@ -16,7 +16,7 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      is-js-project: ${{ determine_if_javascript_project.outputs.is_javascript_project }}
+      is-js-project: ${{ steps.determine_if_javascript_project.outputs.is_javascript_project }}
     steps:
       - name: determine if this is a javascript project
         shell: bash
