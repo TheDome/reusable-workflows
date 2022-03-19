@@ -12,4 +12,5 @@ jobs:
     uses: ./.github/workflows/check-code-structure.yaml
     with:
       repo-default-branch: ${{ github.event.repository.default_branch }}
-      github-token: ${{ secrets.GH_TOKEN }}
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
