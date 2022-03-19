@@ -23,7 +23,7 @@ jobs:
         with:
           repository: thedome/reusable-actions
           path: .github/actions/thedome/reusable-actions
-      - uses: .github/actions/thedome/reusable-actions/megalint
+      - uses: thedome/reusable-actions/megalint@main
         with:
           repo-default-branch: ${{ inputs.repo-default-branch }}
           github-token: ${{ secrets.github-token }}
@@ -34,7 +34,7 @@ jobs:
         with:
           repository: thedome/reusable-actions
           path: .github/actions/thedome/reusable-actions
-      - uses: .github/actions/thedome/reusable-actions/ci-lint
+      - uses: thedome/reusable-actions/ci-lint@main
         with:
           repo-default-branch: ${{ inputs.repo-default-branch }}
           github-token: ${{ secrets.github-token }}
