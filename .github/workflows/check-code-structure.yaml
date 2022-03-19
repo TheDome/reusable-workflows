@@ -53,5 +53,4 @@ jobs:
           path: .github/actions/thedome/reusable-workflows
       - uses: ./.github/actions/thedome/reusable-workflows/ci-lint
         with:
-          repo-default-branch: ${{ inputs.repo-default-branch }}
           github-token: ${{ secrets.github-token }}
