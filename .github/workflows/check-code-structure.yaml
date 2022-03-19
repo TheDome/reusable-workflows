@@ -21,9 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: thedome/reusable-actions
-          path: .github/actions/thedome/reusable-actions
-      - uses: thedome/reusable-actions/megalint@main
+          repository: thedome/reusable-workflows
+          path: .github/actions/thedome/reusable-workflows
+      - uses: ./.github/actions/thedome/reusable-workflows/check-code-formatting.yaml
         with:
           repo-default-branch: ${{ inputs.repo-default-branch }}
           github-token: ${{ secrets.github-token }}
