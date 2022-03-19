@@ -23,7 +23,7 @@ jobs:
         with:
           repository: thedome/reusable-workflows
           path: .github/actions/thedome/reusable-workflows
-      - uses: ./.github/actions/thedome/reusable-workflows/check-code-formatting.yaml
+      - uses: ./.github/actions/thedome/reusable-workflows/check-code-formatting
         with:
           repo-default-branch: ${{ inputs.repo-default-branch }}
           github-token: ${{ secrets.github-token }}
