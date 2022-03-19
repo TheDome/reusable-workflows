@@ -1,0 +1,75 @@
+name: Release PR
+
+author: Dominic Heun
+description: |
+  Creates a release PR for the given release branch.
+
+inputs:
+  production-branch:
+   default: main
+   description: The name of the production branch
+   required: false
+  develop-branch:
+   default: ${{ github.event.repository.default_branch }}
+   description: The name of the develop branch
+   required: false
+  release-pr-labels:
+   default: release,auto-generated
+   description: The labels to add to the release PR
+   required: false
+  github-token:
+   required: true
+   description: The GitHub token to use for authentication
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6 # Not needed with a .ruby-version file
+        bundler-cache: true
+    - name: Install semantic-release
+      shell: bash
+      run: |
+        sudo npm install -g \
+        semantic-release \
+        @semantic-release/git \
+        @semantic-release/release-notes-generator \
+        @semantic-release/github \
+        @semantic-release/exec 
+    - name: Create Release PR
+      shell: bash
+      run: |
+        cat <<EOF > .releaserc.yaml
+        branches: ["${GITHUB_REF#refs/*/}"]
+        tagFormat: '\${version}'
+        dryRun: true
+        ci: true
+        debug: true
+        plugins:
+          - '@semantic-release/commit-analyzer'
+          - [
+              '@semantic-release/exec',
+              {
+                'verifyReleaseCmd': "echo \${nextRelease.version} > version.txt",
+              },
+            ]
+        EOF
+        npx semantic-release --debug
+        cat <<EOF > template.erb
+        Release $(cat version.txt)
+        <% pull_requests.each do |pr| -%>
+        <%=  pr.to_checklist_item %>
+        <% end -%>
+        EOF
+        gem install --no-document git-pr-release
+        git-pr-release --no-fetch --squashed
+      env:
+        GIT_PR_RELEASE_BRANCH_PRODUCTION: ${{ inputs.production-branch }}
+        GIT_PR_RELEASE_BRANCH_STAGING: ${{ inputs.develop-branch }}
+        GIT_PR_RELEASE_TOKEN: ${{ inputs.github-token }}
+        GIT_PR_RELEASE_LABELS: ${{ inputs.release-pr-labels }}
+        GIT_PR_RELEASE_MENTION: author
+        GIT_PR_RELEASE_TEMPLATE: template.erb
+        DEBUG: "true"
